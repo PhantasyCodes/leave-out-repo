@@ -15,6 +15,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Objects;
 
 public class HelloApplication extends Application {
     @Override
@@ -27,6 +28,9 @@ public class HelloApplication extends Application {
         PasswordField passwordField = new PasswordField();
         //Buttons
         Button loginBtn = new Button("Login");
+        Button registerBtn = new Button("Register");
+        //Error Text
+        Text errorText = new Text();
         //GridPane
         GridPane gridPane = new GridPane();
         gridPane.setMinSize(400, 200);
@@ -39,6 +43,8 @@ public class HelloApplication extends Application {
         gridPane.add(passwordText, 0, 1);
         gridPane.add(passwordField, 1, 1);
         gridPane.add(loginBtn, 0, 2);
+        gridPane.add(errorText, 1, 2);
+        gridPane.add(registerBtn, 0, 3);
         //Setting the stage
         Scene scene = new Scene(gridPane);
         stage.setTitle("Login Page");
@@ -49,8 +55,7 @@ public class HelloApplication extends Application {
             @Override
             public void handle(ActionEvent event) {
                 if(emailField.getText().trim().isEmpty() || passwordField.getText().trim().isEmpty()) {
-                    Text errorText = new Text("Please fill in all fields");
-                    gridPane.add(errorText, 1, 2);
+                    errorText.setText("Please fill all fields");
                 }
                 else {
                     try {
@@ -58,10 +63,15 @@ public class HelloApplication extends Application {
 
                         Statement statement = connection.createStatement();
 
-                        ResultSet resultSet = statement.executeQuery("SELECT firstName FROM users");
+                        ResultSet resultSet = statement.executeQuery("SELECT password FROM users WHERE email='"+emailField.getText()+"'");
 
                         while (resultSet.next()) {
-                            System.out.println(resultSet.getString("firstName"));
+                            String password = resultSet.getString("password");
+                            if (!Objects.equals(passwordField.getText(), password)) {
+                                errorText.setText("Wrong Credentials");
+                            } else {
+                                System.out.println("Correct");
+                            }
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -70,6 +80,13 @@ public class HelloApplication extends Application {
                 }
             }
         });
+        registerBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+
+            }
+        });
+
     }
 
     public static void main(String[] args) {
