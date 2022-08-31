@@ -6,6 +6,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
@@ -18,6 +19,8 @@ import java.sql.Statement;
 import java.util.Objects;
 
 public class HelloApplication extends Application {
+
+    static Account account = new Account();
     @Override
     public void start(Stage stage) {
         //Email and Password labels
@@ -63,14 +66,22 @@ public class HelloApplication extends Application {
 
                         Statement statement = connection.createStatement();
 
-                        ResultSet resultSet = statement.executeQuery("SELECT password FROM users WHERE email='"+emailField.getText()+"'");
+                        ResultSet resultSet = statement.executeQuery("SELECT userId, firstName, lastName, email, phone, type, leaveDays, password FROM users WHERE email='"+emailField.getText()+"'");
 
                         while (resultSet.next()) {
                             String password = resultSet.getString("password");
                             if (!Objects.equals(passwordField.getText(), password)) {
                                 errorText.setText("Wrong Credentials");
                             } else {
-                                System.out.println("Correct");
+                                account.id = resultSet.getInt("userId");
+                                account.firstName = resultSet.getString("firstName");
+                                account.lastName = resultSet.getString("lastName");
+                                account.email = resultSet.getString("email");
+                                account.phone = resultSet.getInt("phone");
+                                account.type = resultSet.getString("type");
+                                account.leaveDays = resultSet.getInt("leaveDays");
+                                System.out.println(account.email);
+                                FormApplication.display();
                             }
                         }
                     } catch (Exception e) {
@@ -86,7 +97,50 @@ public class HelloApplication extends Application {
 
             }
         });
+    }
 
+    public class FormApplication {
+
+        public static void display() {
+            Stage stage = new Stage();
+            //Employee id
+            Text idText = new Text("Employee Id:");
+            Text employeeId = new Text(String.valueOf(account.id));
+            //Heading
+            Text formHeader = new Text("Leave Out Form");
+            //Reason
+            Text reasonText = new Text("Reason:");
+            TextField reasonField = new TextField();
+            //Date Pickers
+            Text startingDateText = new Text("Starting Date:");
+            DatePicker startingDate = new DatePicker();
+            Text endDateText = new Text("Ending Date:");
+            DatePicker endDate = new DatePicker();
+            //Buttons
+            Button submit = new Button("Submit:");
+            //GridPane
+            GridPane formGridPane = new GridPane();
+            formGridPane.setMinSize(400, 200);
+            formGridPane.setVgap(5);
+            formGridPane.setHgap(5);
+            formGridPane.setAlignment(Pos.CENTER);
+            //Adding nodes to grip
+            formGridPane.add(idText, 0, 0);
+            formGridPane.add(employeeId, 1, 0);
+            formGridPane.add(formHeader, 0, 1);
+            formGridPane.add(reasonText, 0, 2);
+            formGridPane.add(reasonField, 1, 2);
+            formGridPane.add(startingDateText, 0, 3);
+            formGridPane.add(startingDate, 1, 3);
+            formGridPane.add(endDateText, 0, 4);
+            formGridPane.add(endDate, 1, 4);
+            formGridPane.add(submit, 0, 5);
+            //Setting the stage
+            Scene scene = new Scene(formGridPane);
+            stage.setTitle("Leave Out Form");
+            stage.setScene(scene);
+            stage.show();
+        }
     }
 
     public static void main(String[] args) {
