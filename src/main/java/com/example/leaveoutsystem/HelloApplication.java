@@ -1,6 +1,8 @@
 package com.example.leaveoutsystem;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -9,6 +11,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 public class HelloApplication extends Application {
     @Override
@@ -38,6 +44,32 @@ public class HelloApplication extends Application {
         stage.setTitle("Login Page");
         stage.setScene(scene);
         stage.show();
+        //Creating Login button event handler
+        loginBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                if(emailField.getText().trim().isEmpty() || passwordField.getText().trim().isEmpty()) {
+                    Text errorText = new Text("Please fill in all fields");
+                    gridPane.add(errorText, 1, 2);
+                }
+                else {
+                    try {
+                        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/leave_out_db", "root", "");
+
+                        Statement statement = connection.createStatement();
+
+                        ResultSet resultSet = statement.executeQuery("SELECT firstName FROM users");
+
+                        while (resultSet.next()) {
+                            System.out.println(resultSet.getString("firstName"));
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+        });
     }
 
     public static void main(String[] args) {
