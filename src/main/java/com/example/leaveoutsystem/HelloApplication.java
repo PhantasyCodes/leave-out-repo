@@ -81,6 +81,7 @@ public class HelloApplication extends Application {
                                 account.type = resultSet.getString("type");
                                 account.leaveDays = resultSet.getInt("leaveDays");
                                 System.out.println(account.email);
+                                stage.hide();
                                 FormApplication.display();
                             }
                         }
@@ -118,6 +119,8 @@ public class HelloApplication extends Application {
             DatePicker endDate = new DatePicker();
             //Buttons
             Button submit = new Button("Submit:");
+            //Error message
+            Text formErrorText = new Text();
             //GridPane
             GridPane formGridPane = new GridPane();
             formGridPane.setMinSize(400, 200);
@@ -135,11 +138,38 @@ public class HelloApplication extends Application {
             formGridPane.add(endDateText, 0, 4);
             formGridPane.add(endDate, 1, 4);
             formGridPane.add(submit, 0, 5);
+            formGridPane.add(formErrorText, 1, 5);
             //Setting the stage
             Scene scene = new Scene(formGridPane);
             stage.setTitle("Leave Out Form");
             stage.setScene(scene);
             stage.show();
+
+            submit.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
+                    int startDate = startingDate.getValue().getDayOfMonth();
+                    int endingDate = endDate.getValue().getDayOfMonth();
+                    int duration = endingDate-startDate;
+                    if (duration <= 0 ) {
+                        formErrorText.setText("Please set a duration that makes sense");
+                    } else if (duration > account.leaveDays) {
+                        formErrorText.setText("You do not have enough leave days left");
+                    }
+                    else {
+                        try {
+                            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/leave_out_db", "root", "");
+
+                            Statement statement = connection.createStatement();
+
+                            statement.execute("INSERT INTO leave_out_requests (userId, duration, status) VALUES ("+account.id+", "+duration+", 'Under review');");
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
         }
     }
 
